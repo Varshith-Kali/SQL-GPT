@@ -26,8 +26,40 @@ def main():
     submit = st.button("Submit")
 
     if submit:
-        response = model.generate_content(text_input) 
-        st.write(response.text)
-    
+        # response = model.generate_content(text_input) 
+        # st.write(response.text)
+
+        with st.spinner("Generating SQL Query..."):
+            template = """
+
+            Create a SQL query snippet using below prompt :
+
+            ```
+                {text_input}
+            ``` 
+            Just give the SQL query alone as output.
+            
+            """
+
+            formatted_template = template.format(text_input = text_input)
+            response = model.generate_content(formatted_template)
+            sql_query = response.text
+            sql_query = sql_query.strip().lstrip("```sql").rstrip("```")
+            st.code(sql_query, language="sql")
+
+            explanation_template = """
+
+            Explain the SQL query given below :
+
+            ```
+                {sql_query}
+            ``` 
+            Provide a simple explanation about the SQL query provided.
+            
+            """
+
+            e_template_formatted = explanation_template.format(sql_query = sql_query)
+            explanation = model.generate_content(e_template_formatted)
+            st.write(explanation.text)
 
 main()
