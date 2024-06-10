@@ -22,7 +22,23 @@ def main():
         unsafe_allow_html=True,
     )
 
+    uploaded_file = st.file_uploader("Upload your database file (CSV or Excel)", type=["csv", "xlsx"])
+
     query_type = st.radio("Select Query Type:", ("SQL", "MongoDB"))
+
+    if uploaded_file:
+        if uploaded_file.name.endswith('.csv'):
+            df = pd.read_csv(uploaded_file)
+        elif uploaded_file.name.endswith('.xlsx'):
+            df = pd.read_excel(uploaded_file)
+        
+        st.write("Uploaded Database:")
+        st.write(df.head())
+
+        # Generate the structure of the database
+        table_structure = "\n".join([f"{col}: {dtype}" for col, dtype in zip(df.columns, df.dtypes)])
+
+        
     text_input = st.text_area("Enter your prompt:")
     submit = st.button("Submit")
 
