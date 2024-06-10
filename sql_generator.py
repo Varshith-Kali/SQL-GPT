@@ -3,62 +3,66 @@ import google.generativeai as genai
 
 GOOGLE_API_KEY = "AIzaSyDn2M4Y01MKNVw3TEWV_ldb3o2UPh7bUAo"
 
-genai.configure(api_key = GOOGLE_API_KEY)
+genai.configure(api_key=GOOGLE_API_KEY)
 model = genai.GenerativeModel("gemini-pro")
 
 def main():
-    # Setting the page configuration before any other Streamlit function
-    st.set_page_config(page_title="SQL GPT", page_icon=":robot:")
     
-    # Corrected HTML syntax
+    st.set_page_config(page_title="Query Generator", page_icon=":robot:")
+    
+    
     st.markdown(
         """
         <div style="text-align: center;">
-            <h1>SQL Query Generator 🤖...</h1>
-            <h3>It allows users to generate SQL queries !!!</h3>
-            <p>This is a simple tool that allows you to generate SQL queries based on your prompts.</p>
+            <h1>Query Generator 🤖...</h1>
+            <h3>Generate SQL or MongoDB queries based on your prompts!</h3>
+            <p>This tool allows you to generate SQL or MongoDB queries based on your input.</p>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    text_input = st.text_area("Enter your prompt :")
+    query_type = st.radio("Select Query Type:", ("SQL", "MongoDB"))
+    text_input = st.text_area("Enter your prompt:")
     submit = st.button("Submit")
 
     if submit:
-        # response = model.generate_content(text_input) 
-        # st.write(response.text)
-
-        with st.spinner("Generating SQL Query..."):
-            template = """
-
-            Create a SQL query snippet using below prompt :
-
-            ```
+        with st.spinner("Generating Query..."):
+            if query_type == "SQL":
+                template = """
+                Create a SQL query snippet using the below prompt:
+                ```
                 {text_input}
-            ``` 
-            Just give the SQL query alone as output.
-            
-            """
+                ``` 
+                Just give the SQL query alone as output.
+                """
+            else:
+                template = """
+                Create a MongoDB query snippet using the below prompt:
+                ```
+                {text_input}
+                ``` 
+                Just give the MongoDB query alone as output.
+                """
 
-            formatted_template = template.format(text_input = text_input)
+            formatted_template = template.format(text_input=text_input)
             response = model.generate_content(formatted_template)
-            sql_query = response.text
-            sql_query = sql_query.strip().lstrip("```sql").rstrip("```")
-            st.code(sql_query, language="sql")
+            query = response.text.strip().strip("```sql").strip("```mongodb").strip()
+
+            if query_type == "SQL":
+                st.code(query, language="sql")
+            else:
+                st.code(query, language="json")
 
             explanation_template = """
-
-            Explain the SQL query given below :
-
+            Explain the {query_type} query given below:
             ```
-                {sql_query}
+            {query}
             ``` 
-            Provide a simple explanation about the SQL query provided.
-            
+            Provide a simple explanation about the {query_type} query provided.
             """
 
-            e_template_formatted = explanation_template.format(sql_query = sql_query)
+            e_template_formatted = explanation_template.format(query=query, query_type=query_type)
             explanation = model.generate_content(e_template_formatted)
             st.write(explanation.text)
 
