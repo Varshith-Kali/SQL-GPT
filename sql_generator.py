@@ -9,7 +9,7 @@ genai.configure(api_key=GOOGLE_API_KEY)
 model = genai.GenerativeModel("gemini-pro")
 
 def main():
-    st.set_page_config(page_title="Query Generator", page_icon=":robot:")
+    st.set_page_config(page_title="SQL GPT", page_icon=":robot:")
 
     st.markdown(
         """
